@@ -3,6 +3,7 @@ import requests
 import sqlite3
 import time
 import urllib2
+from match import Match
 
 
 
@@ -15,11 +16,11 @@ import urllib2
 def urlopen_with_retry(url):
     return urllib2.urlopen(url)
 
-def gameID_to_match(region, gameId, gameHash):
+def gameID_to_match(region, gameID, gameHash):
     
-    data = getJSONReply("https://acs.leagueoflegends.com/v1/stats/game/" + str(region) + "/" + str(gameId) + "?gameHash=" + str(gameHash), False)
+    data = getJSONReply("https://acs.leagueoflegends.com/v1/stats/game/" + str(region) + "/" + str(gameID) + "?gameHash=" + str(gameHash), False)
     patch = data["gameVersion"]
-    gameType = data["gameType"]
+    gametype = data["gameType"]
     duration = data["gameDuration"]
     date = data["gameCreation"]
     ##TODO: fix this later
@@ -50,13 +51,15 @@ def gameID_to_match(region, gameId, gameHash):
 
     json_champs1 = json.dumps(champs1)
     json_champs2 = json.dumps(champs2)
-    conn = sqlite3.connect('data/LolEsports.sqlite')
-    c = conn.cursor()
-    c.execute("CREATE TABLE IF NOT EXISTS Matches (gameID, gameHash, team1, team2, champs1, champs2, first_blood, duration, win, gametype, region, patch, tier, date, is_test);")
-    c.execute("INSERT INTO Matches VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);", (gameId, gameHash, team1, team2, json_champs1, json_champs2, first_blood, duration, win, gameType, region, patch, tier, date, is_test))
-    conn.commit()
-    c.close()
-    conn.close()
+    ##conn = sqlite3.connect('data/LolEsports.sqlite')
+    ##c = conn.cursor()
+    ##c.execute("CREATE TABLE IF NOT EXISTS Matches (gameID, team1, team2, champs1, champs2, first_blood, duration, win, gametype, region, patch, tier, date, is_test);")
+    ##c.execute("INSERT INTO Matches VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?);", (gameId, team1, team2, json_champs1, json_champs2, first_blood, duration, win, gameType, region, patch, tier, date, is_test))
+    ##conn.commit()
+    ##c.close()
+    ##conn.close()
+    m = Match(gameID, team1, team2, champs1, champs2, first_blood, duration, win, gametype, region, patch, tier, date, is_test)
+    m.save()
 
 def getJSONReply(url, rate_limit = True):
     response = urlopen_with_retry(url)
